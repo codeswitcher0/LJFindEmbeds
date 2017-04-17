@@ -10,8 +10,8 @@ This script is to assist in the <strong>manual updating of one's Dreamwidth jour
 This script identifies all the journal entries in the specified journal that have media embeds in them, and downloads local copies of all those posts into a directory called "<i>username</i>.livejournal.com". It then generates an index.html that presents conveniently paired links: the link to the cached LJ file (by post title) and the link to the corresponding day in your DW journal; it also lists the corresponding original URL to the post on Livejournal.
 
 ## Requirements
-  *  perl (tested against v5.10.1)
-  *  wget (tested against v1.12)
+  *  perl (tested against v5.10.1 and v5.22.1)
+  *  wget (tested against v1.12 and v1.17.1)
   *  a cookie file that wget can read ("Netscape-style") that has your authenticated LJ cookies (instructions below.)
 
 ## Usage
