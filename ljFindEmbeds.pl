@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 use strict; 
 
-# called ljfindEmbeds.pl -username usernameonlj/usernameondw -startdate yyyy_mm -cookiefile path/to/authenticatedcookiefile.txt
+# called ljfindEmbeds.pl -username usernameonlj/usernameondw -startdate yyyy_mm -enddate yyyy_mm -cookiefile path/to/authenticatedcookiefile.txt
 
 
 # Must take first month/year as argument; 
@@ -12,15 +12,22 @@ my $startmonth = "";
 my $user ="";
 my $dwsubdomain = "";
 
+# Also allow the user to specify end dates, e.g. if we know what month we moved to DW
+my $thisyear = "";
+my $thismonth = "";
+
 sub arguer {
 	my $nextarg = "";
 	my $usernames = "";
 	my $startdate = "";
+	my $enddate = "";
 	for my $arg (@ARGV) {
 		if ($nextarg eq "usernames") {
 			$usernames = $arg;
 		} elsif ($nextarg eq "startdate") {
 			$startdate = $arg;
+		} elsif ($nextarg eq "enddate") {
+			$enddate = $arg;
 		} elsif ($nextarg eq "authenticatedcookies") {
 			$authenticatedcookies = $arg;
 		}
@@ -30,21 +37,30 @@ sub arguer {
 			$nextarg = "usernames";
 		} elsif ($arg =~ /^\-s(|tart(|date))$/ ) {
 			$nextarg = "startdate";
+		} elsif ($arg =~ /^\-e(|nd(|date))$/ ) {
+			$nextarg = "enddate";
 		} elsif ($arg =~ /^\-(|auth(|enticated))c(|ookies)$/ ) {
 			$nextarg = "authenticatedcookies";		
 		}
 	}
-	($user, $dwsubdomain) = split /\//, $usernames;
+	($user, $dwsubdomain) = split /\//, $usernames if $usernames;
 	($user) or die "No LJ user specified. \n";
 	if (! ($dwsubdomain) ) { $dwsubdomain = $user; }
 	$dwsubdomain =~ s/\_/\-/g;
 	if ($startdate =~ /(\d{4})(\_|\-|\/)(\d{2})/) {
 		$startyear = $1;
 		$startmonth = $3;
-	} else {
+	} elsif ($startdate) {
 		die "Couldn't parse the startdate argument, $startdate.\n";
 	}
-	($startyear, $startmonth) = split /\_|\-|\//, $startdate;
+	if ($enddate =~ /(\d{4})(\_|\-|\/)(\d{2})/) {
+		$thisyear = $1;
+		$thismonth = $3;
+	} elsif ($enddate) {
+		die "Couldn't parse the enddate argument, $enddate.\n";
+	}
+	die "No start date given!\n" unless $startyear && $startmonth;
+	# we don't care if enddate isn't set, it defaults to the current month
 	($authenticatedcookies) or die "No authenticated cookie file specifed.  Can\'t access the LJ exporter without logging in, sorry.\n";
 	(-f $authenticatedcookies) or die "Can\'t find authenticated cookie file \"$authenticatedcookies\".\n";
 
@@ -137,9 +153,9 @@ sub find_all_embed_posts {
 # returns report of all posts with embeds, formated one per line: yyyy/mm/dd\tsub\n
 
 	my $accumulator="";
-	my $thisyear = `date +%Y`;
+	$thisyear ||= `date +%Y`;
 	chomp($thisyear);
-	my $thismonth = `date +%m`;
+	$thismonth ||= `date +%m`;
 	chomp($thismonth);
 	my $page;
 	
